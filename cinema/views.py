@@ -1,4 +1,6 @@
 from datetime import datetime
+
+from django.core.files.uploadedfile import UploadedFile
 from django.db.models import F, Count
 from rest_framework import viewsets, mixins, status
 from rest_framework.authentication import TokenAuthentication
@@ -98,15 +100,29 @@ class MovieViewSet(
     @action(
         methods=["POST"],
         detail=True,
-        permission_classes=[IsAdminUser],
         url_path="upload-image",
+        permission_classes=[IsAdminUser]
     )
     def upload_image(self, request, pk=None):
         movie = self.get_object()
+
+        image = request.FILES.get("image")
+        if not isinstance(image, UploadedFile):
+            return Response(
+                {"error": "Invalid image"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         serializer = self.get_serializer(movie, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(
+                {
+                    "message": "Image uploaded successfully",
+                    "image": serializer.data.get("image")
+                },
+                status=status.HTTP_200_OK
+            )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

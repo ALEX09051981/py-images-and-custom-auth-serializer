@@ -47,7 +47,7 @@ class MovieSerializer(serializers.ModelSerializer):
 
 
 class MovieImageSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField(read_only=True)
+    image = serializers.ImageField()
 
     class Meta:
         model = Movie
